@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  posts:
+    build:
+      dockerfile: ./PostsService/Dockerfile
+    container_name: "posts"
+    environment:
+      ASPNETCORE_HTTP_PORTS: 5000
+    ports:
+      - "5000:5000"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  profiles:
+    build:
+      dockerfile: ./ProfilesService/Dockerfile
+    container_name: "profiles"
+    environment:
+      ASPNETCORE_HTTP_PORTS: 5001
+    ports:
+      - "5001:5001"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  rabbitmq:
+    image: "rabbitmq:management"
+    container_name: "rabbitmq"
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 60s
+      retries: 3
